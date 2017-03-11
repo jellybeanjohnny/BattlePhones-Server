@@ -1,0 +1,15 @@
+{
+  "name": "battlephones-server",
+  "version": "1.0.0",
+  "description": "The server for BattlePhones",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matt Amerige",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.2",
+    "ws": "^2.2.0"
+  }
+}
