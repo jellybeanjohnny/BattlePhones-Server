@@ -8,6 +8,8 @@ const app = express();
 const server = http.createServer(app);
 const websocketServer = new WebSocket.Server({server});
 
+var port = process.env.PORT || 8080;
+
 var connections = {"count" : 0};
 var nextIDTicket = 0;
 
@@ -15,7 +17,7 @@ app.get("/", function(request, response) {
     response.send("Hello! Welcome to the BattlePhones Server");
 });
 
-server.listen(8080, function(){
+server.listen(port, function(){
     console.log("Server started! Listening on port %d", server.address().port);
 });
 
