@@ -26,7 +26,7 @@ websocketServer.on('connection', function connection(connection) {
     saveConnection(connection);
 
     connection.on("message", function incoming(message) {
-        handleMessage(message);
+        handleMessage(message, connection);
     });
 
     connection.on("close", function close(close) {
@@ -34,10 +34,11 @@ websocketServer.on('connection', function connection(connection) {
     });
 });
 
-function handleMessage(message) {
+function handleMessage(message, connection) {
     var jsonObject = JSON.parse(message);
     if (jsonObject.eventType === "playerJoined") {
         playerDidJoin(jsonObject);
+        connection.send("Welcome!");
     }
 }
 
