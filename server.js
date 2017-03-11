@@ -12,10 +12,31 @@ app.get("/", function(request, response) {
     response.send("Hello! Welcome to the BattlePhones Server");
 });
 
-websocketServer.on('connection', function connection(websocket) {
-    console.log("Connection to web socket server started");
-});
-
 server.listen(8080, function(){
     console.log("Server started! Listening on port %d", server.address().port);
 });
+
+websocketServer.on('connection', function connection(connection) {
+    console.log("Connection to web socket server started");
+
+    connection.on("message", function incoming(message) {
+        handleMessage(message);
+    });
+
+});
+
+function handleMessage(message) {
+    var isFirstMessage = false;
+    var userName = null; 
+    if (typeof message === 'string') {
+        if (isFirstMessage) {
+            userName = message;
+            console.log(userName + " joined the Lobby! Welcome " + userName + "!");
+        } else {
+            console.log("Server received the following message: " + message);
+        }
+
+    }
+    
+    
+}
