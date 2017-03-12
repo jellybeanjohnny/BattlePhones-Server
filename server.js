@@ -42,6 +42,7 @@ app.post("/player", function(request, response) {
                 response.status(200).send("A player with this uuid already exists.");
             } else {
                 console.log("Error creating player: " + error);
+                response.status(500).send(error);
             }
             
         } else {
