@@ -2,6 +2,25 @@ const express = require('express');
 const http = require('http');
 const url = require('url');
 const WebSocket = require('ws');
+const mongoose = require('mongoose');
+
+mongoose.connect("mongodb://localhost/battlephonesdb");
+
+// SCHEMA SETUP. Do this in a different file later on
+var playerSchema = new mongoose.Schema({
+    displayName: String,
+});
+
+var Player = mongoose.model("Player", playerSchema);
+
+Player.create({displayName: "Matt"}, function(error, player) {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log("Newly created player: ");
+        console.log(player);
+    }
+});
 
 const app = express();
 
