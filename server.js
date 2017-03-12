@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const url = require('url');
 const WebSocket = require('ws');
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 mongoose.connect("mongodb://localhost/battlephonesdb");
@@ -9,13 +10,15 @@ mongoose.connect("mongodb://localhost/battlephonesdb");
 // SCHEMA SETUP. Do this in a different file later on
 var playerSchema = new mongoose.Schema({
     displayName: String,
-    iCloudID: String
+    uuid: String
 });
 
 var Player = mongoose.model("Player", playerSchema);
 
 
 const app = express();
+
+app.use(bodyParser.urlencoded({extended: true}));
 
 const server = http.createServer(app);
 const websocketServer = new WebSocket.Server({server});
@@ -35,7 +38,9 @@ app.get("/", function(request, response) {
 });
 
 app.post("/newPlayer", function(request, response) {
-    console.log(request.body);
+    var displayName = request.body.displayName;
+    var uuid = request.body.uuid;
+    console.log("Received POST request from new user %s with UUID %s", displayName, uuid);
 });
 
 // Sockets
