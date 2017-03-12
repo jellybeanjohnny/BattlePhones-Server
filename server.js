@@ -4,26 +4,9 @@ const url = require('url');
 const WebSocket = require('ws');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const Player = require('./models/player');
 
 mongoose.connect("mongodb://localhost/battlephonesdb");
-
-// SCHEMA SETUP. Do this in a different file later on
-var playerSchema = new mongoose.Schema({
-    displayName: String,
-    uuid: {
-        type: String,
-        validate: {
-          validator: function(v, cb) {
-            Player.find({uuid: v}, function(err,docs){
-               cb(docs.length == 0);
-            });
-          },
-          message: 'Player already exists!'
-        }
-    }
-});
-
-var Player = mongoose.model("Player", playerSchema);
 
 const app = express();
 
@@ -54,7 +37,7 @@ app.post("/player", function(request, response) {
         uuid: request.body.uuid
     },function(error, newPlayer){
         if (error) {
-            if (error.name === "ValidationError") {
+            if (error.name === 'MongoError' && error.code === 11000) {
                 console.log("Player with uuid %s already exists in the database.", request.body.uuid);
                 response.status(200).send("A player with this uuid already exists.");
             } else {
