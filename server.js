@@ -10,11 +10,20 @@ mongoose.connect("mongodb://localhost/battlephonesdb");
 // SCHEMA SETUP. Do this in a different file later on
 var playerSchema = new mongoose.Schema({
     displayName: String,
-    uuid: String
+    uuid: {
+        type: String,
+        validate: {
+          validator: function(v, cb) {
+            Player.find({uuid: v}, function(err,docs){
+               cb(docs.length == 0);
+            });
+          },
+          message: 'Player already exists!'
+        }
+    }
 });
 
 var Player = mongoose.model("Player", playerSchema);
-
 
 const app = express();
 
@@ -37,10 +46,32 @@ app.get("/", function(request, response) {
     response.send("Hello! Welcome to the BattlePhones Server");
 });
 
-app.post("/newPlayer", function(request, response) {
-    var displayName = request.body.displayName;
-    var uuid = request.body.uuid;
-    console.log("Received POST request from new user %s with UUID %s", displayName, uuid);
+// Add a new player to the database
+app.post("/player", function(request, response) {
+
+    Player.create({
+        displayName: request.body.displayName,
+        uuid: request.body.uuid
+    },function(error, newPlayer){
+        if (error) {
+            if (error.name === "ValidationError") {
+                console.log("Player with uuid %s already exists in the database.", request.body.uuid);
+                response.status(200).send("A player with this uuid already exists.");
+            } else {
+                console.log("Error creating player: " + error);
+            }
+            
+        } else {
+            console.log("Created new player: " + newPlayer);  
+            response.status(200).send("Successfully created new player");
+        }
+    });
+
+});
+
+// Update some attribute on the player
+app.put("player/:id", function(request, response) {
+
 });
 
 // Sockets
