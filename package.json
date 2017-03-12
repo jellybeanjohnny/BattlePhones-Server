@@ -9,6 +9,7 @@
   "author": "Matt Amerige",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.17.1",
     "express": "^4.15.2",
     "mongoose": "^4.8.6",
     "ws": "^2.2.0"
