@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Player = require('./models/player');
+const Attack = require("./models/attack");
 
 mongoose.connect("mongodb://localhost/battlephonesdb");
 
@@ -46,12 +47,25 @@ app.post("/player", function(request, response) {
             }
             
         } else {
-            console.log("Created new player: " + newPlayer);  
+            setDefaultAttacksForPlayer(newPlayer); 
             response.status(200).send("Successfully created new player");
         }
     });
-
 });
+
+//TODO: Figure out how closures work and maybe try setting this as a default value instead. also
+// checkout how populate works
+function setDefaultAttacksForPlayer(player) {
+    Attack.findOne({name: "Punch"}, function(error, attack) {
+        if (error) {
+            console.log(error);
+        } else {
+            player.attacks.push(attack);
+            player.save()
+        }
+    });
+}
+
 
 // Update some attribute on the player
 app.put("player/:id", function(request, response) {
