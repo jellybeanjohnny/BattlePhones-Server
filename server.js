@@ -46,25 +46,11 @@ app.post("/player", function(request, response) {
                 response.status(500).send(error);
             }
             
-        } else {
-            setDefaultAttacksForPlayer(newPlayer); 
-            response.status(200).send("Successfully created new player");
+        } else { 
+            response.status(200).json({"player" : newPlayer});
         }
     });
 });
-
-//TODO: Figure out how closures work and maybe try setting this as a default value instead. also
-// checkout how populate works
-function setDefaultAttacksForPlayer(player) {
-    Attack.findOne({name: "Punch"}, function(error, attack) {
-        if (error) {
-            console.log(error);
-        } else {
-            player.attacks.push(attack);
-            player.save()
-        }
-    });
-}
 
 
 // Update some attribute on the player
