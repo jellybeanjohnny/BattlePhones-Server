@@ -39,11 +39,10 @@ app.post("/player", function(request, response) {
     },function(error, newPlayer){
         if (error) {
             if (error.name === 'MongoError' && error.code === 11000) {
-                console.log("Player with uuid %s already exists in the database.", request.body.uuid);
-                response.status(200).send("A player with this uuid already exists.");
+                handleExistingEntry(request.body.uuid, response);
             } else {
                 console.log("Error creating player: " + error);
-                response.status(500).send(error);
+                response.status(500).json({"error" : error});
             }
             
         } else { 
@@ -52,6 +51,12 @@ app.post("/player", function(request, response) {
     });
 });
 
+function handleExistingEntry(uuid, response) {
+    console.log("Player with uuid %s already exists in the database.", uuid);
+    Player.findOne({uuid: uuid}, function(error, player) {
+        response.status(200).json({"message" : "A player with this uuid already exists.", "player": player});
+    });   
+}
 
 // Update some attribute on the player
 app.put("player/:id", function(request, response) {
