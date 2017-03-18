@@ -6,8 +6,9 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Player = require('./models/player');
 const Attack = require("./models/attack");
+const databaseURL = process.env.DATABASE_URI || "mongodb://localhost/battlephonesdb";
 
-mongoose.connect("mongodb://localhost/battlephonesdb");
+mongoose.connect(databaseURL);
 
 const app = express();
 
@@ -92,7 +93,7 @@ function handleDisconnect(close, connection) {
 }
 
 function playerDidJoin(playerInfo) {
-    console.log("%s joined the Lobby! Welcome %s!", playerInfo.username, playerInfo.username);
+    console.log("%s joined the Lobby!", playerInfo.displayName);
 }
 
 function printConnections() {
