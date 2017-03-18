@@ -21,6 +21,11 @@ var port = process.env.PORT || 8080;
 
 var connections = [];
 
+var EventType = {
+    playerJoinInactive : "playerJoinInactive",
+    playerJoinActive   : "playerJoinActive"
+};
+
 server.listen(port, function(){
     console.log("Server started! Listening on port %d", server.address().port);
 });
@@ -78,8 +83,11 @@ websocketServer.on('connection', function connection(connection) {
 
 function handleMessage(message, connection) {
     var jsonObject = JSON.parse(message);
-    if (jsonObject.eventType === "playerJoined") {
-        playerDidJoin(jsonObject, connection);
+    if (jsonObject.eventType === EventType.playerJoinInactive) {
+        // broadcast current connections to player
+        // broadcastDataToAll(connections);
+    } else if (jsonObject.eventType === EventType.playerJoinActive) {
+        playerDidBecomeActive(jsonObject, connection);
         connection.send("Welcome!");
     }
 }
@@ -90,11 +98,12 @@ function handleDisconnect(close, connection) {
     printConnections();
 }
 
-function playerDidJoin(playerInfo, connection) {
+function playerDidBecomeActive(playerInfo, connection) {
     connection.displayName = playerInfo.displayName;
     connection.uuid = playerInfo.uuid;
     connections.push(connection);
-    console.log(playerInfo.displayName + " joined the Lobby!");
+    console.log(playerInfo.displayName + " has joined.");
+    printConnections();
 }
 
 function printConnections() {
@@ -106,7 +115,9 @@ function printConnections() {
 }
 
 function broadcastDataToAll(data) {
-    
+    connections.forEach(function(connection) {
+        connection.send(data);
+    });
 }
 
 /**
