@@ -120,7 +120,10 @@ function broadcastActivePlayers(data, currentConnection) {
     connections
     .filter(function(connection) {
         // Do not include yourself in the list sent to players. Only show OTHER active players
-        connection.uuid != currentConnection.uuid;
+        // connection.uuid != currentConnection.uuid;
+
+        //This is only for testing! I only have one iCloud account to test against so the uuid will always be the same.
+        connection.displayName != currentConnection.displayName;
     })
     .forEach(function(connection) {
         var playerInfo = {"displayName" : connection.displayName,
