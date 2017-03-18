@@ -23,7 +23,8 @@ var connections = [];
 
 var EventType = {
     playerJoinInactive : "playerJoinInactive",
-    playerJoinActive   : "playerJoinActive"
+    playerJoinActive   : "playerJoinActive",
+    activePlayers      : "activePlayers"
 };
 
 server.listen(port, function(){
@@ -84,10 +85,10 @@ websocketServer.on('connection', function connection(connection) {
 function handleMessage(message, connection) {
     var jsonObject = JSON.parse(message);
     if (jsonObject.eventType === EventType.playerJoinInactive) {
-        // broadcast current connections to player
-        // broadcastDataToAll(connections);
+        broadcastActivePlayers(connections, connection);
     } else if (jsonObject.eventType === EventType.playerJoinActive) {
         playerDidBecomeActive(jsonObject, connection);
+        broadcastActivePlayers(connections, connection); 
         connection.send("Welcome!");
     }
 }
@@ -114,9 +115,23 @@ function printConnections() {
     });
 }
 
-function broadcastDataToAll(data) {
+function broadcastActivePlayers(data, currentConnection) {
+    var activePlayers = [];
+    connections
+    .filter(function(connection) {
+        // Do not include yourself in the list sent to players. Only show OTHER active players
+        connection.uuid != currentConnection.uuid;
+    })
+    .forEach(function(connection) {
+        var playerInfo = {"displayName" : connection.displayName,
+                          "uuid" : connection.uuid};
+        activePlayers.push(playerInfo);
+    });
+
+    var activePlayersJSONString = JSON.stringify({"eventType" : EventType.activePlayers,
+                                              "activePlayers" : activePlayers});
     connections.forEach(function(connection) {
-        connection.send(data);
+        connection.send(activePlayersJSONString);
     });
 }
 
