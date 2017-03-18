@@ -19,8 +19,7 @@ const websocketServer = new WebSocket.Server({server});
 
 var port = process.env.PORT || 8080;
 
-var connections = {"count" : 0};
-var nextIDTicket = 0;
+var connections = [];
 
 server.listen(port, function(){
     console.log("Server started! Listening on port %d", server.address().port);
@@ -67,7 +66,6 @@ app.put("player/:id", function(request, response) {
 // Sockets
 websocketServer.on('connection', function connection(connection) {
     console.log("Connection to web socket server started");
-    saveConnection(connection);
 
     connection.on("message", function incoming(message) {
         handleMessage(message, connection);
@@ -81,7 +79,7 @@ websocketServer.on('connection', function connection(connection) {
 function handleMessage(message, connection) {
     var jsonObject = JSON.parse(message);
     if (jsonObject.eventType === "playerJoined") {
-        playerDidJoin(jsonObject);
+        playerDidJoin(jsonObject, connection);
         connection.send("Welcome!");
     }
 }
@@ -92,18 +90,28 @@ function handleDisconnect(close, connection) {
     printConnections();
 }
 
-function playerDidJoin(playerInfo) {
-    console.log("%s joined the Lobby!", playerInfo.displayName);
+function playerDidJoin(playerInfo, connection) {
+    connection.displayName = playerInfo.displayName;
+    connection.uuid = playerInfo.uuid;
+    connections.push(connection);
+    console.log(playerInfo.displayName + " joined the Lobby!");
 }
 
 function printConnections() {
-    console.log("Connected Player Count: " + connections.count);
+    console.log("Total Connections " + connections.length);
+    connections.forEach(function(connection) {
+        console.log("DisplayName: " + connection.displayName);
+        console.log("UUID: " + connection.uuid);
+    });
 }
 
-function saveConnection(connection) {
-    connections[nextIDTicket] = connection;
-    connection.generatedID = nextIDTicket;
-    nextIDTicket += 1;
-    connections.count += 1;
-    printConnections();
+function broadcastDataToAll(data) {
+    
 }
+
+/**
+ * player joins Lobby
+ * message is sent to the server with that players displayName and uuid
+ * The player's displayName, uuid, and a connectionID are added to an object and stored in an array called connections
+ * the server broadcasts the connections array, filtered for each client's own id
+ */
