@@ -85,25 +85,39 @@ websocketServer.on('connection', function connection(connection) {
 function handleMessage(message, connection) {
     var jsonObject = JSON.parse(message);
     if (jsonObject.eventType === EventType.playerJoinInactive) {
-        broadcastActivePlayers(connections, connection);
-    } else if (jsonObject.eventType === EventType.playerJoinActive) {
-        playerDidBecomeActive(jsonObject, connection);
-        broadcastActivePlayers(connections, connection); 
+        addConnection(jsonObject, connection);
+        broadcastActivePlayers();
         connection.send("Welcome!");
+    } else if (jsonObject.eventType === EventType.playerJoinActive) {
+        playerDidBecomeActive(connection);
+        broadcastActivePlayers(); 
     }
 }
 
 function handleDisconnect(close, connection) {
-    delete connections[connection.generatedID];
-    connections.count -= 1;
+    var index = connections.indexOf(connection);
+    connections.splice(index, 1);
+    broadcastActivePlayers()
     printConnections();
 }
 
-function playerDidBecomeActive(playerInfo, connection) {
+function addConnection(playerInfo, connection) {
+    console.log("Adding connection with player info: " + JSON.stringify(playerInfo));
     connection.displayName = playerInfo.displayName;
     connection.uuid = playerInfo.uuid;
+    connection.isActive = false;
     connections.push(connection);
-    console.log(playerInfo.displayName + " has joined.");
+    console.log(playerInfo.displayName + " has connected.");
+    printConnections();
+}
+
+function playerDidBecomeActive(currentConnection) {
+    connections.forEach(function(connection) {
+        if (connection.uuid === currentConnection.uuid) {
+            connection.isActive = true;
+        }
+    });
+    console.log(currentConnection.displayName + " has become active.");
     printConnections();
 }
 
@@ -115,18 +129,16 @@ function printConnections() {
     });
 }
 
-function broadcastActivePlayers(data, currentConnection) {
+function broadcastActivePlayers() {
     var activePlayers = [];
-    connections
-    .filter(function(connection) {
-        // Do not include yourself in the list sent to players. Only show OTHER active players
-        connection.uuid != currentConnection.uuid;
-    })
-    .forEach(function(connection) {
-        var playerInfo = {"displayName" : connection.displayName,
-                          "uuid" : connection.uuid};
-        activePlayers.push(playerInfo);
+    connections.forEach(function(connection) {
+        if (connection.isActive) {
+            var playerInfo = {"displayName" : connection.displayName, "uuid" : connection.uuid};
+            activePlayers.push(playerInfo);
+        }
     });
+
+    console.log("Active Players: " + activePlayers.length);
 
     var activePlayersJSONString = JSON.stringify({"eventType" : EventType.activePlayers,
                                               "activePlayers" : activePlayers});
@@ -134,10 +146,3 @@ function broadcastActivePlayers(data, currentConnection) {
         connection.send(activePlayersJSONString);
     });
 }
-
-/**
- * player joins Lobby
- * message is sent to the server with that players displayName and uuid
- * The player's displayName, uuid, and a connectionID are added to an object and stored in an array called connections
- * the server broadcasts the connections array, filtered for each client's own id
- */
