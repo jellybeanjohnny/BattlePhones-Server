@@ -87,7 +87,6 @@ function handleMessage(message, connection) {
     if (jsonObject.eventType === EventType.playerJoinInactive) {
         addConnection(jsonObject, connection);
         broadcastActivePlayers();
-        connection.send("Welcome!");
     } else if (jsonObject.eventType === EventType.playerJoinActive) {
         playerDidBecomeActive(connection);
         broadcastActivePlayers(); 
