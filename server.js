@@ -156,7 +156,7 @@ function sendChallengeRequest(senderConnection, receiverInfo) {
         return connection.uuid === receiverInfo.opponentUUID;
     });
 
-    var challengeRequest = {"challenger" : senderConnection.displayName,
+    var challengeRequest = {"challengerDisplayName" : senderConnection.displayName,
                             "challengerUUID": senderConnection.uuid};
     var challengeRequestJSONString = JSON.stringify(challengeRequest);
 
