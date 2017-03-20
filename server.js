@@ -25,7 +25,8 @@ var EventType = {
     playerJoinInactive : "playerJoinInactive",
     playerJoinActive   : "playerJoinActive",
     activePlayers      : "activePlayers",
-    challengeRequest   : "challengeRequest"
+    challengeRequest   : "challengeRequest",
+    challengeResponse  : "challengeResponse"
 };
 
 server.listen(port, function(){
@@ -93,6 +94,8 @@ function handleMessage(message, connection) {
         broadcastActivePlayers(); 
     } else if (jsonObject.eventType === EventType.challengeRequest) {
         sendChallengeRequest(connection, jsonObject);
+    } else if (jsonObject.eventType === EventType.challengeResponse) {
+        sendChallengeResponse(connection ,jsonObject);
     }
 }
 
@@ -152,13 +155,25 @@ function broadcastActivePlayers() {
 function sendChallengeRequest(senderConnection, receiverInfo) {
 
     receiverConnection = connections.find(function(connection) {
-        console.log("first: " + connection.uuid + " second: "+ receiverInfo.opponentUUID);
         return connection.uuid === receiverInfo.opponentUUID;
     });
 
     var challengeRequest = {"challengerDisplayName" : senderConnection.displayName,
-                            "challengerUUID": senderConnection.uuid};
+                            "challengerUUID": senderConnection.uuid,
+                            "eventType" : EventType.challengeRequest};
     var challengeRequestJSONString = JSON.stringify(challengeRequest);
 
     receiverConnection.send(challengeRequestJSONString);
+}
+
+function sendChallengeResponse(senderConnection, responseInfo) {
+    opponentConnection = connections.find(function(connection) {
+        return responseInfo.opponentUUID === connection.uuid;
+    });
+
+    var challengeResponse = {"eventType" : EventType.challengeResponse,
+                             "challengeResponse" : responseInfo.challengeResponse,
+                            "opponentUUID" : senderConnection.uuid};
+
+    opponentConnection.send(JSON.stringify(challengeResponse));
 }
